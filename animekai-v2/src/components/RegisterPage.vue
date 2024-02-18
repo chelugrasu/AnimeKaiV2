@@ -2,11 +2,27 @@
         <div class="BackgroundOverlay">
         <div class="UIBackground"></div>
     </div>
-    <div class="LoginBox">
-        <div class="Title">Conectează-te</div>
+    <div class="RegisterBox">
+        <div class="Title">Înregistrează-te</div>
+        <div class="username" :class="{'animate-error': animateUsername}">
+            <input class="Input" minlength="3" maxlength="26" v-model="formData.usernameValue" @blur="checkInput1" @keydown="nameKeydown($event)"/>
+            <label class="inputText" :class="{ 'has-value': hasValue1 }">Username</label>
+        </div>
+        <div class="errorDetails" style="top: 33vh;" v-show="showUsernameErrorDetails">
+          <font-awesome-icon class="exclamationMark" :icon="['fas', 'exclamation']" shake />
+          <div class="errorDetailsBox" style="width: 13vh;">
+            <div class="detail" v-text="usernameErrorText"></div>
+          </div>
+        </div>
         <div class="email" :class="{'animate-error': animateEmail}">
             <input class="Input" type="email" v-model="formData.emailValue" @blur="checkInput2" />
             <label class="inputText" id="emailInputText" :class="{ 'has-value': hasValue2 }">Email</label>
+        </div>
+        <div class="errorDetails" style="top: 43vh;" v-show="showEmailErrorDetails">
+          <font-awesome-icon class="exclamationMark" :icon="['fas', 'exclamation']" shake />
+          <div class="errorDetailsBox" style="width: 24vh;">
+            <div class="detail" v-text="emailErrorText"></div>
+          </div>
         </div>
         <div class="password" :class="{'animate-error': animatePassword}">
             <input class="Input" v-bind:type="inputType" v-model="formData.passwordValue" @blur="checkInput3" />
@@ -14,54 +30,69 @@
             <font-awesome-icon class="showPasswordIcon" v-show="showPassword" :icon="['fas', 'eye-slash']" @click="togglePasswordDisplay(true)"/>
             <font-awesome-icon class="showPasswordIcon" v-show="hidePassword" :icon="['fas', 'eye']" @click="togglePasswordDisplay(false)"/>
         </div>
-        <div class="checkBox" @click="checkBox()">
-            <div class="check" v-show="formData.checkedBox"></div>
-            <div class="checkBoxText">Ține-mă minte</div>
+        <div class="errorDetails" style="top: 53vh;" v-show="showPasswordErrorDetails">
+          <font-awesome-icon class="exclamationMark" :icon="['fas', 'exclamation']" shake />
+          <div class="errorDetailsBox" style="width: 26vh;">
+            <div class="detail">Minim 8 caractere, cu o majusculă și o cifră.</div>
+          </div>
         </div>
-        <router-link to="/forgot-password">
-          <div class="forgotPassword">Ai uitat parola?</div>
-        </router-link>
-        <div class="loginButton" @click="login()">
-            <div class="loginText">CONECTARE</div>
+        <div class="registerButton" @click="register()">
+            <div class="registerText">ÎNREGISTRARE</div>
         </div>
         <div class="optionsText">sau conectează-te folosind</div>
         <div class="options">
-            <!-- <div class="connectGoogle">
-              <font-awesome-icon class="connectGoogleIcon" :icon="['fab', 'google']" />
-            </div> -->
-          
           <div class="connectDiscord" @click="connectDiscord()">
             <font-awesome-icon class="connectDiscordIcon" :icon="['fab', 'discord']" />
           </div>
         </div>
     </div>
 </template>
+
 <script>
 import router from '../router/index.js';
 export default {
   data() {
     return {
         formData: {
-            loginType: 'normal',
+            usernameValue: '',
             emailValue: '',
             passwordValue: '',
-            checkedBox: false,
         },
+      hasValue1: false,
       hasValue2: false,
       hasValue3: false,
       inputType: 'password',
       showPassword: true,
       hidePassword: false,
+      animateUsername: false,
       animateEmail: false,
       animatePassword: false,
+      showUsernameErrorDetails: false,
+      showEmailErrorDetails: false,
+      showPasswordErrorDetails: false,
+      usernameErrorText: '',
+      emailErrorText: '',
     };
   },
+  watch: {
+    usernameValue(val) {
+      this.name = val.replace(/\W/g, "");
+    },
+  },
   methods: {
+    checkInput1() {
+      this.hasValue1 = this.formData.usernameValue !== '';
+    },
     checkInput2() {
       this.hasValue2 = this.formData.emailValue !== '';
     },
     checkInput3() {
       this.hasValue3 = this.formData.passwordValue !== '';
+    },
+    nameKeydown(e) {
+      if (/^\W$/.test(e.key)) {
+        e.preventDefault();
+      }
     },
     togglePasswordDisplay(bool){
         if(bool){
@@ -74,16 +105,15 @@ export default {
             this.inputType = "password"
         }
     },
-    checkBox(){
-        if (this.formData.checkedBox){
-            this.formData.checkedBox = false;
-        }else{
-            this.formData.checkedBox = true;
-        }
+    forgotPassword(){
+        console.log("password continue")
     },
-    async login() {
+    async register() {
+      this.showUsernameErrorDetails = false;
+      this.showEmailErrorDetails = false;
+      this.showPasswordErrorDetails = false;
       try {
-        const response = await fetch(`${process.env.VUE_APP_API_BASE_URL}/api/login`, {
+        const response = await fetch(`${process.env.VUE_APP_API_BASE_URL}/api/register`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -92,36 +122,63 @@ export default {
         });
         if (!response.ok) {
           const data = await response.json();
-          if (data.message === "Invalid credentials") {
-            console.log('here')
+          if (data.message === 'Email is not available') {
 
+            this.emailErrorText = 'Se pare că acest e-mail este deja utilizat.'
+            this.showEmailErrorDetails = true;
             this.animateEmail = true;
-            this.animatePassword = true;
             setTimeout(() => {
               this.animateEmail = false;
+            }, 500);
+
+          } else if (data.message === 'Username is not available') {
+
+            this.usernameErrorText = 'Nume deja folosit.'
+            this.showUsernameErrorDetails = true;
+            setTimeout(() => {
+              this.animateUsername = false;
+            }, 500);
+
+          } else if(data.message === 'Email is not correct'){
+
+            this.animateEmail = true;
+            this.emailErrorText = 'Este necesar un e-mail valid : ex@abc.xyz'
+            this.showEmailErrorDetails = true;
+            setTimeout(() => {
+              this.animateEmail = false;
+            }, 500);
+
+          }else if(data.message === 'Username is too small') {
+
+            this.animateUsername = true;
+            this.usernameErrorText = 'Minim 3 caractere.'
+            this.showUsernameErrorDetails = true;
+            // Reset animation after 1 second (adjust as needed)
+            setTimeout(() => {
+              this.animateUsername = false;
+            }, 500);
+
+          }else if(data.message === 'Password is not correct'){
+
+            this.animatePassword = true;
+            this.showPasswordErrorDetails = true;
+            setTimeout(() => {
               this.animatePassword = false;
             }, 500);
+
+
           }else{
-            console.log('Log-in failed');
+            console.log('Registration failed');
           }
-        }else {
-          const data = await response.json();
-            if(data === 'Succesfuly Logged in'){
-              router.push('/home');
-              console.log('Log-in successful.');
-            }else{
-              const token = data.token;
-              localStorage.setItem('authToken', token); // Store token in local storage
-              router.push('/home');
-              console.log('Log-in successful.');
-            }
+        } else {
+          router.push('/home');
         }
 
         
 
         // Continue with your code...
       } catch (error) {
-        console.error('Error during log-in:', error);
+        console.error('Error during registration:', error);
       }
     },
     async checkUserToken() {
@@ -135,9 +192,7 @@ export default {
           if(userData){
             router.push('/home');
             console.log(userData.user.userId)
-          }else(
-            console.log('not logged in')
-          )
+          }
         } catch (error) {
           console.error('Automatic login failed:', error);
           localStorage.removeItem('authToken');
@@ -149,7 +204,7 @@ export default {
     },
   },
   mounted(){
-    this.checkUserToken()
+    this.checkUserToken();
   }
 };
 </script>
@@ -172,11 +227,11 @@ position: absolute;
   z-index: -1;
   background-size: cover;
   background-repeat: no-repeat;
-  background-image: url(../assets/OnePieceBackground.jpeg);
+  background-image: url(../assets/SoloLevelingBackground.jpg);
   background-color: black;
   filter: blur(1vh);
 }
-.LoginBox{
+.RegisterBox{
     position: absolute;
     top: 0vh;
     right: 0vh;
@@ -237,9 +292,81 @@ position: absolute;
     left: -31vh;
 }
 
-.email{
+.username{
     position: absolute;
     top: 30vh;
+    width: 40vh;
+    height: 8vh;
+    border: 0.25vh solid transparent;
+    border-radius: 1vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.5s;
+}
+
+.username:focus-within{
+    border: 0.25vh solid var(--primary-color);
+}
+
+.errorDetails{
+  position: absolute;
+  z-index: 1;
+  right: 15vh;
+}
+
+.exclamationMark{
+  position: absolute;
+  top: 0.9vh;
+  right: -3.5vh;
+  color: rgb(146, 60, 60);
+  width: 2.5vh;
+  height: 2.5vh;
+  z-index: 100;
+}
+
+.errorDetailsBox{
+  position: absolute;
+  height: 3vh;
+  clip-path: inset(0 0 0 100%);
+  top: 0.5vh;
+  right: -4vh;
+  z-index: 2;
+  background-color: rgb(29,29,29);
+  border-radius: 0.5vh;
+  border: 0.25vh solid red;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.errorDetails:hover .errorDetailsBox{
+  animation: reveal 0.5s forwards ease-in-out;
+}
+
+@keyframes reveal {
+  from {
+    clip-path: inset(0 0 0 100%);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.detail{
+  user-select: none;
+  pointer-events: none;
+  position: relative;
+  position: absolute;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300;
+  font-size: 1.15vh;
+  color: gray;
+  left: 0.5vh;
+}
+
+.email{
+    position: absolute;
+    top: 40vh;
     width: 40vh;
     height: 8vh;
     border: 0.25vh solid transparent;
@@ -272,7 +399,7 @@ position: absolute;
 
 .password{
     position: absolute;
-    top: 42.5vh;
+    top: 50vh;
     width: 40vh;
     height: 8vh;
     border: 0.25vh solid transparent;
@@ -315,53 +442,8 @@ position: absolute;
     height: 2vh;
     cursor: pointer;
 }
-.checkBox{
-    position: absolute;
-    top: 55vh;
-    left: 10vh;
-    width: 1.5vh;
-    height: 1.5vh;
-    outline: 0.25vh solid var(--primary-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-.check {
-  display: inline-block;
-  transform: rotate(45deg);
-  height: 0.8vh;
-  width: 0.4vh;
-  border-bottom: 0.4vh solid var(--primary-color);
-  border-right: 0.4vh solid var(--primary-color);
-  pointer-events: none;
-}
-.checkBoxText{
-    position: absolute;
-    font-family: 'Roboto', sans-serif;
-    font-weight: 300;
-    font-size: 1.5vh;
-    width: 10vh;
-    color: gray;
-    cursor: pointer;
-    left: 2vh;
-    top: -0.1vh;
-    user-select: none;
-}
 
-.forgotPassword{
-    position: absolute;
-    font-family: 'Roboto', sans-serif;
-    font-weight: 300;
-    font-size: 1.5vh;
-    color: gray;
-    cursor: pointer;
-    right: 10vh;
-    top: 55vh;
-    user-select: none;
-}
-
-.loginButton{
+.registerButton{
     color: white;
     position: absolute;
     width: 40vh;
@@ -373,16 +455,16 @@ position: absolute;
     display: flex;
     align-items: center;
     justify-content: center;
-    top: 65vh;
+    top: 70vh;
     transition: 0.5s;
 }
-.loginButton:hover{
+.registerButton:hover{
     color: var(--primary-color);
     outline: 0.25vh solid var(--primary-color);
     filter: drop-shadow(0vh 0vh 0.5vh var(--primary-color));
     background-color: rgba(29,29,29,0.5);
 }
-.loginText{
+.registerText{
     position: absolute;
     font-family: 'Roboto', sans-serif;
     font-weight: 600;
@@ -398,42 +480,14 @@ position: absolute;
     font-weight: 300;
     font-size: 1.35vh;
     color: gray;
-    top: 75vh;
-    user-select: none;
-}
-
-.connectGoogle{
-    position: absolute;
     top: 80vh;
-    right: 30vh;
-    width: 3.5vh;
-    height: 3.5vh;
-    background-color: white;
-    border-radius: 10vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: 0.25s ease-in;
-}
-.connectGoogle:hover{
-  background-color: #5865F2;
-}
-.connectGoogle:hover .connectGoogleIcon{
-  color: white;
-}
-.connectGoogleIcon{
-  pointer-events: none;
-  color: #5865F2;
-  width: 2vh;
-  height: 2vh;
-  transition: 0.25s ease-in;
+    user-select: none;
 }
 
 .connectDiscord{
   position: absolute;
-    top: 80vh;
-    right: 27.75vh;
+    top: 84vh;
+    right: 28vh;
     width: 4vh;
     height: 4vh;
     background-color: #5865F2;

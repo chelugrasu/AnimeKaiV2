@@ -10,46 +10,109 @@
     </router-link>
     
     <router-link to="/login">
-        <div class="loginButton">Log In</div>
+        <div class="loginButton">Conectează-te</div>
     </router-link>
-
-    <div class="TokyoGhoulSlide">
-        <div class="Title">Tokyo Ghoul</div>
-        <div class="Description">Un student din Tokyo, Ken Kaneki, se transformă în jumătate Ghoul după un eveniment fatal. Înțepenit între lumea umană și cea a Ghoul-ilor, Ken se confruntă cu dileme de identitate și moralitate într-o lume plină de conflicte și pericole.</div>
-        <div class="watchButton">Vizionează</div>
-        <div class="learnMoreButton">Află mai Mult</div>
-        <div class="slidePhoto"></div>
-        <div class="nextSlideButton"><font-awesome-icon :icon="['fas', 'chevron-right']" /></div>
+    <router-link to="/register">
+        <div class="registerButton">Înregistrează-te</div>
+    </router-link>
+    <div class="swiper-container">
+    <div class="swiper-wrapper">
+      <div class="swiper-slide">
+        <div class="slide-content">
+            <h2 class="Title">Tokyo Ghoul</h2>
+            <p class="Description">Un student din Tokyo, Ken Kaneki, se transformă în jumătate Ghoul după un eveniment fatal. Înțepenit între lumea umană și cea a Ghoul-ilor, Ken se confruntă cu dileme de identitate și moralitate într-o lume plină de conflicte și pericole.</p>
+            <div class="watchButton" @click="watchSlide('TokyoGhoul')">Vizionează</div>
+            <div class="learnMoreButton" @click="learnMore('TokyoGhoul')">Află mai Mult</div>
+            <div class="slidePhoto" id="slidePhotoTokyoGhoul"></div>
+            <div class="currentSlide">
+                <div class="Dot" id="activeDot"></div>
+                <div class="Dot" id="inactiveDot"></div>
+                <div class="Dot" id="inactiveDot"></div>
+            </div>
+            <div class="SlideButton" id="previousSlideButton" @click="slidePrevPage"><font-awesome-icon class="arrowLeftIcon" :icon="['fas', 'chevron-left']" /></div>
+            <div class="SlideButton" id="nextSlideButton" @click="slideNextPage"><font-awesome-icon class="arrowRightIcon" :icon="['fas', 'chevron-right']" /></div>
+        </div>
+      </div>
+      <div class="swiper-slide">
+        <div class="slide-content">
+            <h2 class="Title">Solo Leveling</h2>
+            <p class="Description">Un luptător singuratic, Sung Jin-Woo, își îmbunătățește abilitățile într-o lume plină de monștri. În căutarea puterii, el descoperă secretele universului și propriile sale transformări, într-o poveste plină de pericole și evoluție personală.</p>
+            <div class="watchButton" @click="watchSlide('SoloLeveling')">Vizionează</div>
+            <div class="learnMoreButton" @click="learnMore('SoloLeveling')">Află mai Mult</div>
+            <div class="slidePhoto" id="slidePhotoSoloLeveling"></div>
+            <div class="currentSlide">
+                <div class="Dot" id="inactiveDot"></div>
+                <div class="Dot" id="activeDot"></div>
+                <div class="Dot" id="inactiveDot"></div>
+            </div>
+            <div class="SlideButton" id="previousSlideButton" @click="slidePrevPage"><font-awesome-icon class="arrowLeftIcon" :icon="['fas', 'chevron-left']" /></div>
+            <div class="SlideButton" id="nextSlideButton" @click="slideNextPage"><font-awesome-icon class="arrowRightIcon" :icon="['fas', 'chevron-right']" /></div>
+        </div>
+      </div>
+      <div class="swiper-slide">
+        <div class="slide-content">
+            <h2 class="Title">Demon Slayer</h2>
+            <p class="Description">Un tânăr vânător de demoni, Tanjiro Kamado, își urmărește scopul de a-și vindeca sora și de a răzbuna familia, ucisă de demoni. În călătoria sa plină de pericole, el descoperă prietenii puternice și se confruntă cu forțe întunecate, devenind o speranță pentru o lume amenințată de rău.</p>
+            <div class="watchButton" @click="watchSlide('DemonSlayer')">Vizionează</div>
+            <div class="learnMoreButton" @click="learnMore('DemonSlayer')">Află mai Mult</div>
+            <div class="slidePhoto" id="slidePhotoDemonSlayer"></div>
+            <div class="currentSlide">
+                <div class="Dot" id="inactiveDot"></div>
+                <div class="Dot" id="inactiveDot"></div>
+                <div class="Dot" id="activeDot"></div>
+            </div>
+            <div class="SlideButton" id="previousSlideButton" @click="slidePrevPage"><font-awesome-icon class="arrowLeftIcon" :icon="['fas', 'chevron-left']" /></div>
+            <div class="SlideButton" id="nextSlideButton" @click="slideNextPage"><font-awesome-icon class="arrowRightIcon" :icon="['fas', 'chevron-right']" /></div>
+        </div>
+      </div>
     </div>
+  </div>
 </template>
 
 <style scoped>
+
+
+.swiper-container { 
+  width: 100%;
+  height: 98.3vh; /* Adjust to fit your needs */
+  overflow: hidden;
+  overflow-x: hidden;
+}
+
+.swiper-slide {
+    width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .BackgroundOverlay{
 position: absolute;
-  height: 100.01vh;
+  height: 100.05vh;
   top: -0.05vh;
   left: 0vh;
   width: 100%;
-  background-color: rgba(0,0,0,0.65);
+  background-color: rgba(0,0,0,0.85);
 }
 .UIBackground{
     position: absolute;
-  height: 100.01vh;
+  height: 100.1vh;
   top: -0.05vh;
   left: 0vh;
   width: 100%;
   z-index: -1;
   background-size: cover;
   background-repeat: no-repeat;
-  background-image: url(../assets/UIBackground.jpg);
+  background-image: url(../assets/tokyoGhoulBackground.jpg);
   background-color: black;
-  /* filter: blur(1vh); */
+  filter: blur(1vh);
 }
 
 .LogoText{
     position: absolute;
     top: 2.5vh;
     left: 0vh;
+    z-index: 5;
     height: 2.5vh;
     width: 22.5vh;
     background-size: contain;
@@ -57,22 +120,25 @@ position: absolute;
     background-image: url(../assets/LogoText.png);
 }
 .loginButton{
+    user-select: none;
     font-family: 'Roboto', sans-serif;
     font-weight: 700;
     font-size: 1.5vh;
     color: white;
     position: absolute;
     top: 2.5vh;
-    right: 5vh;
-    width: 10vh;
-    height: 4vh;
-    border-radius: 2vh;
+    right: 3vh;
+    width: 15vh;
+    height: 5vh;
+    border-radius: 0.05vh;
+    transform: skew(-8deg);
     display: flex;
     align-items: center;
     justify-content: center;
     background-color: rgba(0,0,0,0.25);
     outline: 0.25vh solid white;
     transition: 0.35s;
+    z-index: 10;
 }
 .loginButton:hover{
     color: var(--primary-color);
@@ -80,17 +146,47 @@ position: absolute;
     filter: drop-shadow(0vh 0vh 0.5vh var(--primary-color));
 }
 
+.registerButton{
+  user-select: none;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 700;
+    font-size: 1.5vh;
+    color: white;
+    position: absolute;
+    top: 2.5vh;
+    right: 19.25vh;
+    width: 15vh;
+    height: 5vh;
+    border-radius: 0.05vh;
+    transform: skew(-8deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0,0,0,0.25);
+    outline: 0.25vh solid white;
+    transition: 0.35s;
+    z-index: 10;
+}
+.registerButton:hover{
+    color: var(--primary-color);
+    outline: 0.25vh solid var(--primary-color);
+    filter: drop-shadow(0vh 0vh 0.5vh var(--primary-color));
+}
+
+
 .Title{
+    user-select: none;
     font-family: 'Roboto', sans-serif;
     font-weight: 500;
     letter-spacing: 0.25vh;
     font-size: 7vh;
     color: white;
     position: absolute;
-    top: 30vh;
+    top: 20vh;
     left: 15vh; 
 }
 .Description{
+  user-select: none;
     font-family: 'Roboto', sans-serif;
     font-weight: 400;
     font-size: 1.75vh;
@@ -99,16 +195,17 @@ position: absolute;
     letter-spacing: 0.15vh;
     line-height: 3vh;
     position: absolute;
-    top: 42vh;
+    top: 36vh;
     left: 15vh;
 }
 .watchButton{
+  user-select: none;
     font-family: 'Roboto', sans-serif;
     font-weight: 300;
     font-size: 2vh;
     color: white;
     position: absolute;
-    top: 60vh;
+    top: 55vh;
     left: 15vh;
     width: 20vh;
     height: 6vh;
@@ -129,12 +226,13 @@ position: absolute;
 }
 
 .learnMoreButton{
+  user-select: none;
     font-family: 'Roboto', sans-serif;
     font-weight: 400;
     font-size: 2vh;
     color: white;
     position: absolute;
-    top: 60vh;
+    top: 55vh;
     left: 37.5vh;
     width: 20vh;
     height: 6vh;
@@ -155,20 +253,135 @@ position: absolute;
 
 .slidePhoto{
     position: absolute;
-    top: -60vh;
-    width: 100vh;
-    height: 160vh;
-    right: 10vh;
-    background-size: contain;
+    top: 8.25vh;
+    width: 100vw;
+    height: 180vh;
+    right: -52.5vh;
     background-repeat: no-repeat;
-    background-image: url('../assets/tokyoGhoul.png');
+}
+
+#slidePhotoTokyoGhoul{
+    background-image: url('../assets/TokyoGhoul.png');
     filter: drop-shadow(0vh 0vh 15vh rgba(110, 38, 14, 1));
+    background-size: 160vh;
+}
+#slidePhotoSoloLeveling{
+    background-image: url('../assets/SoloLeveling.png');
+    filter: drop-shadow(0vh 0vh 15vh rgb(0, 174, 255));
+    background-size: 160vh;
+}
+#slidePhotoDemonSlayer{
+    background-image: url('../assets/DemonSlayer.png');
+    filter: drop-shadow(0vh 0vh 15vh var(--primary-color));
+    background-size: 160vh;
+}
+.SlideButton{
+    position: absolute;
+    width: 8.5vh;
+    height: 8.5vh;
+    top: 66.5vh;
+    background-color: rgba(29,29,29,0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10vh;
+    cursor: pointer;
+    transition: 0.35s;
+
+}
+.SlideButton:hover{
+    background-color: rgb(80, 80, 80);
+}
+
+#previousSlideButton{
+    left: 15vh;
+}
+.arrowLeftIcon{
+    color: white;
+    width: 3vh;
+    height: 3vh;
+}
+
+#nextSlideButton{
+    left: 25vh;
+}
+.arrowRightIcon{
+    color: white;
+    width: 3vh;
+    height: 3vh;
+}
+.currentSlide{
+    flex: 0vh 0vh auto;
+    display: inline-block;
+    position: absolute;
+    margin: 1vh;
+    top: 75vh;
+    left: 18vh;
+    display: inline-block;
+}
+.Dot{
+    width: 1.75vh;
+    height: 1.75vh;
+    border-radius: 10vh;
+    outline: 0.25vh solid gray;
+    float: left;
+    margin: 0.75vh;
+}
+#activeDot{
+    background-color: gray;
+}
+#inactiveDot{
+    background-color: transparent;
 }
 
 </style>
 
 <script>
-export default{
-    name: "LandingPage"
-}
+import Swiper from 'swiper';
+import 'swiper/swiper-bundle.css'; // Import Swiper styles
+
+export default {
+  data() {
+    return {
+      swiper: null, // Initialize swiper instance property
+      autoplayInterval: null // Initialize autoplay interval property
+    };
+  },
+  mounted() {
+    // Initialize Swiper
+    this.swiper = new Swiper('.swiper-container', {
+      direction: 'horizontal', // Set the direction to horizontal
+      slidesPerView: 1, // Show only one slide at a time
+      spaceBetween: 0, // No space between slides
+      loop: true,
+    });
+
+    // Start autoplay
+    this.startAutoplay();
+  },
+  methods: {
+    slideNextPage() {
+      if (this.swiper) {
+        this.swiper.slideNext();
+      }
+    },
+    slidePrevPage() {
+      if (this.swiper) {
+        this.swiper.slidePrev();
+      }
+    },
+    startAutoplay() {
+      this.autoplayInterval = setInterval(() => {
+        this.slideNextPage();
+      }, 5000); // Change the interval duration as needed
+    },
+    stopAutoplay() {
+      clearInterval(this.autoplayInterval);
+    }
+  },
+  beforeUnmount() {
+    // Clean up - Stop autoplay before the component is destroyed
+    this.stopAutoplay();
+  }
+};
 </script>

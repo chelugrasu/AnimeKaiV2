@@ -2,11 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LandingPage from '../components/LandingPage.vue'
 import HomePage from '../components/HomePage.vue'
 import SeriesPage from '../components/SeriesPage.vue'
-import RegisterPage from '../components/RegisterPage.vue'
 import LoginPage from '../components/LoginPage.vue'
-import VerifyPage from '../components/VerifyPage.vue'
-import ForgotPassPage from '../components/ForgotPassPage.vue'
-import ResetPasswordPage from '../components/ResetPasswordPage.vue'
 
 const routes = [
   {
@@ -25,30 +21,10 @@ const routes = [
     component: SeriesPage
   },
   {
-    path: '/register',
-    name: 'Register Page',
-    component: RegisterPage
-  },
-  {
     path: '/login',
-    name: 'Login Page',
+    name: 'LoginPage',
     component: LoginPage
-  },
-  {
-    path: '/verify',
-    name: 'Verify Page',
-    component: VerifyPage
-  },
-  {
-    path: '/forgot-password',
-    name: 'Forgot Password Page',
-    component: ForgotPassPage
-  },
-  {
-    path: '/reset-password',
-    name: 'Reset Password Page',
-    component: ResetPasswordPage
-  },
+  }
 ]
 
 const router = createRouter({
