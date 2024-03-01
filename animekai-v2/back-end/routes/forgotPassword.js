@@ -16,11 +16,11 @@ const limiter = rateLimit({
 app.use(limiter);
 
 const transporter = nodemailer.createTransport({
-    host: "smtp-relay.brevo.com",
-    port: 587,
+    host: "mail.animekai.ro",
+    port: 465,
     auth: {
-      user: "cheluakagrasu@gmail.com",
-      pass: "wYIrCmMk6hp7d2b8",
+      user: "noreply@animekai.ro",
+      pass: "*D=7T(td??3O",
     },
   });
 
@@ -45,7 +45,7 @@ router.post('/', async (req, res) => {
                 const token = crypto.randomBytes(20).toString('hex'); 
                 pool.query(updateQuery, [token, email]);
                 transporter.sendMail({
-                  from: 'noreply.animekai@gmail.com',
+                  from: 'noreply@animekai.ro',
                   to: email,
                   subject: 'Resetare parola AnimeKai.ro',
                   text: `Apăsați următorul link pentru resetarea parolei contului dumneavoastră: http://localhost:8080/reset-password?token=${token}`

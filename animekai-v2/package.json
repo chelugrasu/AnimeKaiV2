@@ -13,6 +13,8 @@
     "@fortawesome/free-brands-svg-icons": "^6.5.1",
     "@fortawesome/free-solid-svg-icons": "^6.5.1",
     "@fortawesome/vue-fontawesome": "^3.0.6",
+    "@studio-freight/lenis": "^1.0.37",
+    "@uizaio/playerjs": "^5.20.8-rc2",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.6",
@@ -23,6 +25,7 @@
     "express-rate-limit": "^7.1.5",
     "jsonwebtoken": "^9.0.2",
     "limit": "^0.0.1",
+    "multer": "^1.4.5-lts.1",
     "mysql": "^2.18.1",
     "nodemailer": "^6.9.9",
     "nodemailer-smtp-transport": "^2.7.4",
@@ -31,6 +34,8 @@
     "swiper": "^11.0.6",
     "vidstack": "^1.10.5",
     "vue": "^3.4.19",
+    "vue-image-compressor": "^1.0.3",
+    "vue-lenis": "^1.0.0",
     "vue-router": "^4.0.13"
   },
   "devDependencies": {

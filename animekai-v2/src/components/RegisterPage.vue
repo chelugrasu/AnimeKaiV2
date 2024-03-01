@@ -5,7 +5,7 @@
     <div class="RegisterBox">
         <div class="Title">Înregistrează-te</div>
         <div class="username" :class="{'animate-error': animateUsername}">
-            <input class="Input" minlength="3" maxlength="26" v-model="formData.usernameValue" @blur="checkInput1" @keydown="nameKeydown($event)"/>
+            <input class="Input" minlength="3" maxlength="20" v-model="formData.usernameValue" @blur="checkInput1" @keydown="nameKeydown($event)"/>
             <label class="inputText" :class="{ 'has-value': hasValue1 }">Username</label>
         </div>
         <div class="errorDetails" style="top: 33vh;" v-show="showUsernameErrorDetails">
@@ -30,12 +30,19 @@
             <font-awesome-icon class="showPasswordIcon" v-show="showPassword" :icon="['fas', 'eye-slash']" @click="togglePasswordDisplay(true)"/>
             <font-awesome-icon class="showPasswordIcon" v-show="hidePassword" :icon="['fas', 'eye']" @click="togglePasswordDisplay(false)"/>
         </div>
-        <div class="errorDetails" style="top: 53vh;" v-show="showPasswordErrorDetails">
+        <div class="errorDetails" style="top: 53vh; right: 18.5vh;" v-show="showPasswordErrorDetails">
           <font-awesome-icon class="exclamationMark" :icon="['fas', 'exclamation']" shake />
           <div class="errorDetailsBox" style="width: 26vh;">
             <div class="detail">Minim 8 caractere, cu o majusculă și o cifră.</div>
           </div>
         </div>
+        <div :class="{'checkBox': true, 'animate-error2': animateTerms}" @click="this.formData.checkBox = !this.formData.checkBox">
+            <div class="check" v-show="formData.checkBox"></div>
+            <div class="checkBoxText">Accept <router-link to="/terms"><span style="text-decoration: 1px solid white; color: var(--primary-color);">termenii și condițiile</span></router-link></div>
+        </div>
+        <router-link to="/login">
+          <div class="loginText">Ai deja un cont?</div>
+        </router-link>
         <div class="registerButton" @click="register()">
             <div class="registerText">ÎNREGISTRARE</div>
         </div>
@@ -57,6 +64,7 @@ export default {
             usernameValue: '',
             emailValue: '',
             passwordValue: '',
+            checkBox: false,
         },
       hasValue1: false,
       hasValue2: false,
@@ -67,6 +75,7 @@ export default {
       animateUsername: false,
       animateEmail: false,
       animatePassword: false,
+      animateTerms: false,
       showUsernameErrorDetails: false,
       showEmailErrorDetails: false,
       showPasswordErrorDetails: false,
@@ -167,10 +176,19 @@ export default {
             }, 500);
 
 
+          }else if(data.message === 'Not agreed to terms'){
+            this.animateTerms = true;
+            setTimeout(() => {
+              this.animateTerms = false;
+            }, 500);
+
           }else{
             console.log('Registration failed');
           }
         } else {
+          const data = await response.json();
+          const token = data.JWTtoken;
+          localStorage.setItem('authToken', token); // Store token in local storage
           router.push('/home');
         }
 
@@ -191,7 +209,6 @@ export default {
           const userData = await response.json();
           if(userData){
             router.push('/home');
-            console.log(userData.user.userId)
           }
         } catch (error) {
           console.error('Automatic login failed:', error);
@@ -237,6 +254,11 @@ position: absolute;
     right: 0vh;
     width: 60vh;
     height: 100vh;
+    background-image: 
+    radial-gradient(circle at center, rgba(255,255,255,.005) 0, rgba(255,255,255,0.005) 1px, transparent 1px),
+    linear-gradient(to right, rgba(255,255,255, 0.01) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255, 0.01) 1px, transparent 1px);
+    background-size: 50px 50px;
     background-color: rgba(29,29,29,1);
     display: flex;
     align-items: center;
@@ -414,6 +436,10 @@ position: absolute;
     border: 0.25vh solid red;
     animation: moveLeftRight 0.25s ease-in-out;
   }
+.animate-error2 {
+  animation: moveLeftRight 0.25s ease-in-out;
+}
+
 
   @keyframes moveLeftRight {
     0% {
@@ -436,12 +462,59 @@ position: absolute;
 .showPasswordIcon{
     position: absolute;
     color: white;
-    left: 33vh;
+    left: 36vh;
     top: 4vh;
     width: 2vh;
     height: 2vh;
     cursor: pointer;
 }
+
+.checkBox{
+    position: absolute;
+    top: 60vh;
+    left: 10vh;
+    width: 1.5vh;
+    height: 1.5vh;
+    outline: 0.25vh solid var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.check {
+  display: inline-block;
+  transform: rotate(45deg);
+  height: 0.8vh;
+  width: 0.4vh;
+  border-bottom: 0.4vh solid var(--primary-color);
+  border-right: 0.4vh solid var(--primary-color);
+  pointer-events: none;
+}
+.checkBoxText{
+    cursor: auto;
+    position: absolute;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300;
+    font-size: 1.5vh;
+    width: max-content;
+    color: gray;
+    left: 2vh;
+    top: -0.1vh;
+    user-select: none;
+}
+
+.loginText{
+    position: absolute;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300;
+    font-size: 1.5vh;
+    color: gray;
+    cursor: pointer;
+    right: 10vh;
+    top: 60vh;
+    user-select: none;
+}
+
 
 .registerButton{
     color: white;

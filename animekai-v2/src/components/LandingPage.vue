@@ -23,7 +23,8 @@
             <p class="Description">Un student din Tokyo, Ken Kaneki, se transformă în jumătate Ghoul după un eveniment fatal. Înțepenit între lumea umană și cea a Ghoul-ilor, Ken se confruntă cu dileme de identitate și moralitate într-o lume plină de conflicte și pericole.</p>
             <div class="watchButton" @click="watchSlide('TokyoGhoul')">Vizionează</div>
             <div class="learnMoreButton" @click="learnMore('TokyoGhoul')">Află mai Mult</div>
-            <div class="slidePhoto" id="slidePhotoTokyoGhoul"></div>
+            <img class="slidePhoto" id="slidePhotoTokyoGhoul" src="../assets/TokyoGhoul.png" loading="lazy">
+            <div class="swiper-lazy-preloader"></div>
             <div class="currentSlide">
                 <div class="Dot" id="activeDot"></div>
                 <div class="Dot" id="inactiveDot"></div>
@@ -39,7 +40,8 @@
             <p class="Description">Un luptător singuratic, Sung Jin-Woo, își îmbunătățește abilitățile într-o lume plină de monștri. În căutarea puterii, el descoperă secretele universului și propriile sale transformări, într-o poveste plină de pericole și evoluție personală.</p>
             <div class="watchButton" @click="watchSlide('SoloLeveling')">Vizionează</div>
             <div class="learnMoreButton" @click="learnMore('SoloLeveling')">Află mai Mult</div>
-            <div class="slidePhoto" id="slidePhotoSoloLeveling"></div>
+            <img class="slidePhoto" id="slidePhotoSoloLeveling" src="../assets/SoloLeveling.png" loading="lazy">
+            <div class="swiper-lazy-preloader"></div>
             <div class="currentSlide">
                 <div class="Dot" id="inactiveDot"></div>
                 <div class="Dot" id="activeDot"></div>
@@ -55,7 +57,8 @@
             <p class="Description">Un tânăr vânător de demoni, Tanjiro Kamado, își urmărește scopul de a-și vindeca sora și de a răzbuna familia, ucisă de demoni. În călătoria sa plină de pericole, el descoperă prietenii puternice și se confruntă cu forțe întunecate, devenind o speranță pentru o lume amenințată de rău.</p>
             <div class="watchButton" @click="watchSlide('DemonSlayer')">Vizionează</div>
             <div class="learnMoreButton" @click="learnMore('DemonSlayer')">Află mai Mult</div>
-            <div class="slidePhoto" id="slidePhotoDemonSlayer"></div>
+            <img class="slidePhoto" id="slideDemonSlayer" src="../assets/DemonSlayer.png" loading="lazy">
+            <div class="swiper-lazy-preloader"></div>
             <div class="currentSlide">
                 <div class="Dot" id="inactiveDot"></div>
                 <div class="Dot" id="inactiveDot"></div>
@@ -92,7 +95,13 @@ position: absolute;
   top: -0.05vh;
   left: 0vh;
   width: 100%;
-  background-color: rgba(0,0,0,0.85);
+  background-image: 
+  radial-gradient(circle at center, rgba(255,255,255,.005) 0, rgba(255,255,255,0.005) 0.05vw, transparent 0.05vw),
+  linear-gradient(to right, rgba(255,255,255, 0.01) 0.05vw, transparent 0.05vw),
+  linear-gradient(to bottom, rgba(255,255,255, 0.01) 0.05vw, transparent 0.05vw);
+  background-size: 2.5vw 2.5vw;
+  background-attachment: fixed;
+  background-color: #141414;
 }
 .UIBackground{
     position: absolute;
@@ -195,6 +204,7 @@ position: absolute;
     letter-spacing: 0.15vh;
     line-height: 3vh;
     position: absolute;
+    text-align: justify;
     top: 36vh;
     left: 15vh;
 }
@@ -253,27 +263,29 @@ position: absolute;
 
 .slidePhoto{
     position: absolute;
-    top: 8.25vh;
-    width: 100vw;
-    height: 180vh;
-    right: -52.5vh;
+    top: 0vh;
+    width: 100%;
+    height: 100%;
+    right: -35vh;
     background-repeat: no-repeat;
 }
 
 #slidePhotoTokyoGhoul{
-    background-image: url('../assets/TokyoGhoul.png');
+    object-fit: contain;
+    object-position: center center;
     filter: drop-shadow(0vh 0vh 15vh rgba(110, 38, 14, 1));
-    background-size: 160vh;
+    background-size: 100%;
 }
 #slidePhotoSoloLeveling{
-    background-image: url('../assets/SoloLeveling.png');
+    object-fit: contain;
+    object-position: center center;
     filter: drop-shadow(0vh 0vh 15vh rgb(0, 174, 255));
-    background-size: 160vh;
 }
 #slidePhotoDemonSlayer{
-    background-image: url('../assets/DemonSlayer.png');
     filter: drop-shadow(0vh 0vh 15vh var(--primary-color));
-    background-size: 160vh;
+    object-fit: contain;
+    object-position: center center;
+  
 }
 .SlideButton{
     position: absolute;

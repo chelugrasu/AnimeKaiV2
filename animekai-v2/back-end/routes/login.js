@@ -48,11 +48,14 @@ router.post('/', async (req, res) => {
                       
                         if (isMatch) {
                           if(rememberMe){
-                            const user_id = results[i].user_id
-                            const token = jwt.sign({ userId: user_id }, JWT_SECRET, { expiresIn: '30d' });
+                            const username = results[i].username
+                            const token = jwt.sign({ username: username }, JWT_SECRET, { expiresIn: '30d' });
                             return res.status(200).json({ token });
+                            
                           }else{
-                            return res.status(200).json({ message: 'Succesfuly Logged in' });
+                            const username = results[i].username
+                            const token = jwt.sign({ username: username }, JWT_SECRET, { expiresIn: '1h' });
+                            return res.status(200).json({ token });
                           }
                         } else {
                           // Passwords do not match
@@ -92,11 +95,9 @@ router.post('/', async (req, res) => {
                   for (let i = 0; i < results.length; i++) {
                     if (results[i].email === email) {
                       if(rememberMe){
-                        const user_id = results[i].user_id
-                        const token = jwt.sign({ userId: user_id }, JWT_SECRET, { expiresIn: '30d' });
-                        return res.status(200).json({ token });
-                      }else{
-                        return res.status(200).json({ message: 'Succesfuly Logged in' });
+                        const username = results[i].username
+                        const token = jwt.sign({ username: username }, JWT_SECRET, { expiresIn: '30d' });
+                        return res.status(200).json({ message: 'Succesfuly Logged In', token });
                       }
                       
                     }

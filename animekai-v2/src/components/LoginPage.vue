@@ -21,6 +21,9 @@
         <router-link to="/forgot-password">
           <div class="forgotPassword">Ai uitat parola?</div>
         </router-link>
+        <router-link to="/register">
+          <div class="registerText">Nu ai un cont?</div>
+        </router-link>
         <div class="loginButton" @click="login()">
             <div class="loginText">CONECTARE</div>
         </div>
@@ -106,10 +109,7 @@ export default {
           }
         }else {
           const data = await response.json();
-            if(data === 'Succesfuly Logged in'){
-              router.push('/home');
-              console.log('Log-in successful.');
-            }else{
+            if(data){
               const token = data.token;
               localStorage.setItem('authToken', token); // Store token in local storage
               router.push('/home');
@@ -182,6 +182,11 @@ position: absolute;
     right: 0vh;
     width: 60vh;
     height: 100vh;
+    background-image: 
+    radial-gradient(circle at center, rgba(255,255,255,.005) 0, rgba(255,255,255,0.005) 1px, transparent 1px),
+    linear-gradient(to right, rgba(255,255,255, 0.01) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255, 0.01) 1px, transparent 1px);
+    background-size: 50px 50px;
     background-color: rgba(29,29,29,1);
     display: flex;
     align-items: center;
@@ -350,6 +355,18 @@ position: absolute;
 }
 
 .forgotPassword{
+    position: absolute;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300;
+    font-size: 1.5vh;
+    color: gray;
+    cursor: pointer;
+    right: 10vh;
+    top: 57.25vh;
+    user-select: none;
+}
+
+.registerText{
     position: absolute;
     font-family: 'Roboto', sans-serif;
     font-weight: 300;
