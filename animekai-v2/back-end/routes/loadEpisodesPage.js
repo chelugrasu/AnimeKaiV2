@@ -21,7 +21,7 @@ router.post('/', async (req, res) => {
   try {
     const seriesNameSlug = req.body.seriesName;
     if(seriesNameSlug){
-      pool.query('SELECT * FROM series WHERE url_slug = ?', [seriesNameSlug], (error, resultsSeries) => {
+      pool.query('SELECT * FROM series_test WHERE url_slug = ?', [seriesNameSlug], (error, resultsSeries) => {
         if (error) {
           console.error('Error during query:', error);
         }
@@ -31,25 +31,38 @@ router.post('/', async (req, res) => {
             if (error) {
               console.error('Error during query:', error);
             }
-            pool.query('SELECT * FROM episodes WHERE series_slug = ?', [seriesNameSlug], (error, resultsEpisodes) => {
-              if (error) {
-                console.error('Error during query:', error);
+            pool.query(`
+            SELECT * FROM episodes_test WHERE series_slug = ? ORDER BY 
+              CAST(
+                REPLACE(
+                  REPLACE(
+                    SUBSTRING(episode_title, 1, 4), 
+                    '.', 
+                    ''
+                  ),
+                  ' ', 
+                  ''
+                ) AS UNSIGNED
+              ) ASC`, [seriesNameSlug], (error, resultsEpisodes) => {
+            if (error) {
+              console.error('Error during query:', error);
+              // Handle error
+            }
+          
+            if (resultsEpisodes.length > 0) {
+              if (resultsReviews.length > 0) {
+                return res.json({ seriesData: resultsSeries, episodesData: resultsEpisodes, reviewsData: resultsReviews });
+              } else {
+                return res.json({ seriesData: resultsSeries, episodesData: resultsEpisodes });
               }
-        
-              if (resultsEpisodes.length > 0) {
-                if(resultsReviews.length > 0){
-                  return res.json({ seriesData: resultsSeries, episodesData: resultsEpisodes, reviewsData: resultsReviews})
-                }else{
-                  return res.json({ seriesData: resultsSeries, episodesData: resultsEpisodes})
-                }
-              }else{
-                if(resultsReviews.length > 0){
-                  return res.json({ seriesData: resultsSeries, reviewsData: resultsReviews})
-                }else{
-                  return res.json({ seriesData: resultsSeries})
-                }
+            } else {
+              if (resultsReviews.length > 0) {
+                return res.json({ seriesData: resultsSeries, reviewsData: resultsReviews });
+              } else {
+                return res.json({ seriesData: resultsSeries });
               }
-            });
+            }
+          });
           });
         }
       });

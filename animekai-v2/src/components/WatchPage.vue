@@ -83,12 +83,16 @@ import router from '@/router';
   export default {
     data(){
     return{
+        userName: '',
+        isLoggedIn: false,
         isLoaded: false,
         episode: [],
         series: [],
         episodes: [],
         seasons: [],
         chapters: [],
+        episodeLength: 0,
+        continueWatching: [],
         currentSeason: '',
         videoSrc: '',
         player: null,
@@ -104,24 +108,42 @@ import router from '@/router';
     }
     },
     async mounted(){
+      const authToken = localStorage.getItem('authToken');
+          if (authToken) {
+            try {
+              const response = await fetch(`${process.env.VUE_APP_API_BASE_URL}/api/isLoggedIn`, {
+                headers: { Authorization: `Bearer ${authToken}` }
+              });
+              const userData = await response.json();
+              if(userData){
+                this.userName = userData.username
+                this.isLoggedIn = true
+              }
+            } catch (error) {
+              console.error('Automatic login failed:', error);
+              localStorage.removeItem('authToken');
+            }
+        }
         const episodeID = this.$route.params.episode;
         if(localStorage.getItem('autoSkip') === 'true'){this.autoSkipButton = true}
         if(localStorage.getItem('autoNext') === 'true'){this.autoNextButton = true}
         if(localStorage.getItem('autoPlay') === 'true'){this.autoPlayButton = true}
         if(!isNaN(parseFloat(episodeID)) && isFinite(episodeID)){
             try{
+                const username = this.userName
                 const response = await fetch(`${process.env.VUE_APP_API_BASE_URL}/api/loadEpisode`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ episodeID })
+                body: JSON.stringify({ episodeID, username })
                 });
                 if (response.ok) {
                 const data = await response.json();
                 this.episode = data.episodeData
                 this.series = data.seriesData
                 this.episodes = data.episodesData
+                this.continueWatching = data.continueWatchingData
                 const seasons = JSON.parse(this.series[0].seasons);
                 this.seasons = Object.entries(seasons).map(([title, season]) => ({ title, season }));
                 this.currentSeason = this.episode[0].episode_season
@@ -187,6 +209,7 @@ import router from '@/router';
                 .then(response => response.json())
                 .then(response => {
                   this.chapters = response.chapters
+                  this.episodeLength = response.length
                 }) .catch(err => console.error(err));
               }) .catch(err => console.error(err));
             }
@@ -194,7 +217,6 @@ import router from '@/router';
           
           // Use mounted hook to initialize player
           this.$nextTick(() => {
-            const continueWatching = localStorage.getItem(`ContinueWatching_${this.episode[0].episode_id}`)
               const player = new window.playerjs.Player(this.$refs.videoIframe);
               let previousTime = null;
               var isPlaying = false;
@@ -239,9 +261,8 @@ import router from '@/router';
               this.intervalId = setInterval(checkTime, 1000);
 
               player.on('play', () => {
-                  if(continueWatching && !currentTimeSet){
-                    var ContinueWatchingObject = JSON.parse(continueWatching)
-                    player.setCurrentTime(ContinueWatchingObject[0].lastCurrentTimeSeconds)
+                  if(this.continueWatching.length > 0 && !currentTimeSet){
+                    player.setCurrentTime(this.continueWatching[0].continue_time)
                     currentTimeSet = !currentTimeSet
                 }
               });
@@ -306,15 +327,33 @@ import router from '@/router';
         },
     },
     beforeUnmount() {
-      console.log('here')
-      const indexOutro = this.chapters.findIndex(chapter => chapter.title === 'OUTRO');
-      const outroStart = this.chapters[indexOutro].start
-      if(this.currentTimeSeconds > 0 && this.currentTimeSeconds < outroStart){
-        var episodeToContinue = [
-          {episode_id: this.episode[0].episode_id, lastCurrentTimeSeconds: this.currentTimeSeconds}
-        ]
-        localStorage.setItem(`ContinueWatching_${this.episode[0].episode_id}`, JSON.stringify(episodeToContinue))
-      }
+        if(this.currentTimeSeconds > 5){
+          fetch(`${process.env.VUE_APP_API_BASE_URL}/api/loadEpisode/saveContinueWatching`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              episodeId: this.episode[0].episode_id,
+              video_url: this.episode[0].video_url,
+              episode_title: this.episode[0].episode_title,
+              series_slug: this.series[0].url_slug,
+              username: this.userName,
+              currentTimeSeconds: this.currentTimeSeconds,
+              episode_length: this.episodeLength
+            }),
+          })
+          .then(response => {
+            if (response.ok) {
+              this.currentTimeSeconds = 0
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          })
+          .catch(error => {
+            console.error('Error saving continue watching:', error);
+          });
+        }
       clearInterval(this.intervalId);
   },
   computed: {
@@ -326,14 +365,33 @@ import router from '@/router';
   created(){
     const vm = this;
     window.addEventListener('beforeunload', function() {
-      const indexOutro = vm.chapters.findIndex(chapter => chapter.title === 'OUTRO');
-      const outroStart = vm.chapters[indexOutro].start
-      if(vm.currentTimeSeconds > 0 && vm.currentTimeSeconds < outroStart){
-        var episodeToContinue = [
-          {episode_id: vm.episode[0].episode_id, lastCurrentTimeSeconds: vm.currentTimeSeconds}
-        ]
-        localStorage.setItem(`ContinueWatching_${vm.episode[0].episode_id}`, JSON.stringify(episodeToContinue))
-      }
+        if(vm.currentTimeSeconds > 5){
+          fetch(`${process.env.VUE_APP_API_BASE_URL}/api/loadEpisode/saveContinueWatching`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              episodeId: vm.episode[0].episode_id,
+              video_url: vm.episode[0].video_url,
+              episode_title: vm.episode[0].episode_title,
+              series_slug: vm.series[0].url_slug,
+              username: vm.userName,
+              currentTimeSeconds: vm.currentTimeSeconds,
+              episode_length: vm.episodeLength
+            }),
+          })
+          .then(response => {
+            if (response.ok) {
+              vm.currentTimeSeconds = 0
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          })
+          .catch(error => {
+            console.error('Error saving continue watching:', error);
+          });
+        }
     });
   }
   };

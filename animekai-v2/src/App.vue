@@ -2,18 +2,18 @@
   <div id="app">
     <div class="header" v-if="shouldShowHeader">
     <div class="logo"></div>
-    <div :class='{headerButton: true, activeHeaderButton: activeHeaderButtonIndex === 0}' @click="redirect('/home', 0)"   style="left: 23vh;"><font-awesome-icon class="headerButtonIcon" style="color: white;" :icon="['fas', 'house']" /><p>Acasă</p></div>
-    <div :class='{headerButton: true, activeHeaderButton: activeHeaderButtonIndex === 1}' @click="redirect('/series', 1)" style="left: 34vh; top: 0vh;" id="seriesButton"><font-awesome-icon class="headerButtonIcon" style="color: white;" :icon="['fas', 'desktop']" /><p>Seriale</p></div>
-    <div :class='{headerButton: true, activeHeaderButton: activeHeaderButtonIndex === 2}' @click="redirect('/movies', 2)" style="left: 45vh;" id="moviesButton"><font-awesome-icon class="headerButtonIcon" style="color: white;" :icon="['fas', 'film']" /><p>Filme</p></div>
+    <div :class='{headerButton: true, activeHeaderButton: activeHeaderButtonIndex === 0}' @click="redirectHeader('/home', 0)"   style="left: 23vh;"><font-awesome-icon class="headerButtonIcon" style="color: white;" :icon="['fas', 'house']" /><p>Acasă</p></div>
+    <div :class='{headerButton: true, activeHeaderButton: activeHeaderButtonIndex === 1}' @click="redirectHeader('/series', 1)" style="left: 34vh; top: 0vh;" id="seriesButton"><font-awesome-icon class="headerButtonIcon" style="color: white;" :icon="['fas', 'desktop']" /><p>Seriale</p></div>
+    <div :class='{headerButton: true, activeHeaderButton: activeHeaderButtonIndex === 2}' @click="redirectHeader('/movies', 2)" style="left: 45vh;" id="moviesButton"><font-awesome-icon class="headerButtonIcon" style="color: white;" :icon="['fas', 'film']" /><p>Filme</p></div>
     <div class="loggedInCategory" v-show="isLoggedIn">
       <div class='optionsButton' @click="toggleOptionsContainer()">
         <!-- <font-awesome-icon class="optionsButtonIcon" :icon="['fas', 'circle-user']" /> -->
-        <img class="optionsButtonIcon" :src="getProfilePicture(userName)" loading="lazy">
-        <p class="optionsButtonText" v-text="userName"></p>
+        <img v-if="isLoggedIn" class="optionsButtonIcon" :src="getProfilePicture(userName)" loading="lazy">
+        <p v-if="isLoggedIn" class="optionsButtonText" v-text="userName"></p>
         <font-awesome-icon style="color: white; height: 1.35vh; margin-left: 0.75vh; margin-top: -0.2vh;" :icon="['fas', 'chevron-down']"/>
       </div>
       <div class="optionsContainer" :class="{ 'optionsContainer-active': isActive }">
-        <div class="optionButton" style="top: 0.5vh;">
+        <div class="optionButton" style="top: 0.5vh;" @click="redirect(`/member/${toLowerCaseValue(userName)}`)">
           <font-awesome-icon class="optionButtonIcon" :icon="['fas', 'user']" size="sm"/>
           <div class="optionButtonDot"></div>
           <p class="optionButtonText">Profilul meu</p>
@@ -61,7 +61,7 @@ export default {
   computed: {
     shouldShowHeader() {
       // Check if the route path is not equal to the paths where you want to hide the header
-      return !['/', '/login', '/register', '/verify', '/forgot-password', '/reset-password`'].includes(this.$route.path);
+      return !['/', '/login', '/register', '/verify', '/forgot-password', '/upload-files', '/reset-password`'].includes(this.$route.path);
     }
   },
   provide() {
@@ -99,7 +99,7 @@ export default {
           )
         } catch (error) {
           console.error('Automatic login failed:', error);
-          localStorage.removeItem('authToken');
+          // localStorage.removeItem('authToken');
         }
       }
     },
@@ -110,7 +110,19 @@ export default {
       localStorage.removeItem('authToken');
       window.location.reload();
     },
-    redirect(location, index){
+    toLowerCaseValue(value){
+      return value.toLowerCase();
+    },
+    redirect(location){
+      this.toggleOptionsContainer()
+      setTimeout(() => {
+          router.push(location);
+            setTimeout(() => {
+              window.location.reload();
+            }, 1); // Reload after 1 second
+        }, 1); // Push router after 1 second
+    },
+    redirectHeader(location, index){
       this.setActiveHeaderButtonIndex(index)
       router.push(location)
     },
@@ -118,6 +130,7 @@ export default {
       this.activeHeaderButtonIndex = index
     },
     getProfilePicture(user){
+        if(this.isLoggedIn){
           const profilePicture = `${user.toLowerCase()}-profilePhoto.png`;
           let imageUrl;
 
@@ -128,6 +141,7 @@ export default {
           }
 
           return imageUrl;
+        }
     }
   }
 }

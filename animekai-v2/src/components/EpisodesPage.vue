@@ -51,9 +51,8 @@
             <div v-for="(episode, index) in filteredEpisodes" :key="index" class="episode" @click="redirect(`/watch/${episode.episode_id}`)">
                 <div class='episodeVideo'>
                     <font-awesome-icon class="playIcon" :icon="['fas', 'circle-play']" />
-                    <img :src="thumbnailUrls[index]" style="width: 100%; height: 100%; border-radius: 4.65px;" loading="lazy">
+                    <img :src="getVideoPreview(series[0].hostname, episode.video_url)" style="width: 100%; height: 100%; border-radius: 4.65px;" loading="lazy">
                     <div class="blackSide"></div>
-                  <!-- <div style="position: relative; padding-top: 56.25%;"><iframe :src="`https://iframe.mediadelivery.net/embed/${getId(getVideoIdFromDiv(episode.video_url))}?autoplay=false`"  loading="lazy" style="border: none; border-radius: 4.65px; position: absolute; top: 0; height: 100%; width: 100%;" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen="true"></iframe></div>                 -->
                 </div>
                 <p class="episodeTitle">{{ episode.episode_title }}</p>
             </div>
@@ -192,7 +191,7 @@ export default {
         }else if(type === 'getReleaseYear'){
           return new Date(series.release_date).getFullYear();
         }else if(type === 'getHeaderImageUrl'){
-          const headerPhoto = `${series.header_photo}.jpg`;
+          const headerPhoto = `${series.url_slug}-headerPhoto.jpg`;
           let imageUrl;
 
           try {
@@ -204,7 +203,7 @@ export default {
           }
           return imageUrl;
         }else if(type ==='getPosterImageUrl'){
-          const posterPhoto = `${series.poster_photo}.jpg`;
+          const posterPhoto = `${series.url_slug}-posterPhoto.jpg`;
           let imageUrl;
 
           try {
@@ -244,52 +243,18 @@ export default {
     async setActiveSeason(index) {
       this.activeSeasonIndex = index;
       this.toggleSeasonSelector();
-      this.thumbnailUrls = []
-      const thumbnailPromises = this.filteredEpisodes.map(episode => this.getThumbnailUrl(episode.video_url));
-      this.thumbnailUrls = await Promise.all(thumbnailPromises);
     },
-    async getThumbnailUrl(videoUrl) {
-        try {
-            const videoThumbnailUrl = await this.getVideoIdFromDiv(videoUrl);
-            if (videoThumbnailUrl) {
-                return videoThumbnailUrl;
-            } else {
-                return '';
-            }
-        } catch (error) {
-            console.error('Error fetching thumbnail URL:', error);
-            return '';
-        }
-    },
-    async getVideoIdFromDiv(divContent) {
-        // /\/embed\/([^\/?#]+\/[^\/?#]+)\??/;
-        divContent = divContent.toString();
-                /* eslint-disable-next-line no-useless-escape */
-        const videoIdRegex = /\/embed\/[^\/?#]+\/([^\/?#]+)\??/;
-        const libraryIdRegex = /\/embed\/(\d+)/;
-        const videoId = divContent.match(videoIdRegex);
-        const libraryId = divContent.match(libraryIdRegex);
-
-        if (videoId && libraryId) {
-            const options = {
-                method: 'GET',
-                headers: { accept: 'application/json', AccessKey: '381c0414-641b-46a9-ae42-69ec77f8223b' }
-            };
-
-            try {
-                const responseLibrary = await fetch(`https://api.bunny.net/videolibrary/${libraryId[1]}`, options);
-                const dataLibrary = await responseLibrary.json();
-                const response = await fetch(`https://api.bunny.net/pullzone/${dataLibrary.PullZoneId}?includeCertificate=false`, options);
-                const data = await response.json();
-                const videoThumbnailUrl = (`https://${data.Hostnames[0].Value}/${videoId[1]}/thumbnail.jpg`);
-                return videoThumbnailUrl;
-            } catch (err) {
-                console.error(err);
-                return null;
-            }
-        } else {
-            return null;
-        }
+    getVideoPreview(hostname, video_url){
+      /* eslint-disable-next-line no-useless-escape */
+      const videoIdRegex = /\/embed\/[^\/?#]+\/([^\/?#]+)\??/;
+      const videoId = video_url.match(videoIdRegex);
+      if (videoId && videoId.length > 1) {
+        const videoPreview = (`https://${hostname}/${videoId[1]}/thumbnail.jpg`);
+        return videoPreview;
+      } else {
+        // Handle case where videoId is null or undefined
+        return null; // or return a default value, throw an error, etc.
+      }
     },
     getSeason(index){
       if(this.seasons){
@@ -722,7 +687,7 @@ export default {
 .episodeVideo{
   position: relative;
   width: 400px;
-  height: auto;
+  height: 250px;
   left: 20px;
   display: flex;
   align-items: center;
@@ -771,6 +736,8 @@ export default {
   font-weight: 500;
   font-size: 22px;
   color: white;
+  min-width: auto;
+  max-width: 400px;
 }
 
 .notLoggedIn{

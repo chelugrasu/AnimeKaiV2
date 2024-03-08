@@ -13,6 +13,7 @@ const uploadFilesRouter = require('./routes/uploadFiles');
 const loadEpisodesPage = require('./routes/loadEpisodesPage');
 const addReviewRoute = require('./routes/addReview');
 const loadEpisodeRoute = require('./routes/loadEpisode');
+const loadProfilePageRoute = require('./routes/loadProfilePage');
 const app = express();
 
 app.use(cors());
@@ -28,6 +29,7 @@ app.use('/api/uploadFiles', uploadFilesRouter);
 app.use('/api/loadEpisodesPage', loadEpisodesPage);
 app.use('/api/addReview', addReviewRoute);
 app.use('/api/loadEpisode', loadEpisodeRoute);
+app.use('/api/loadProfilePage', loadProfilePageRoute);
 
 
 // Start the server

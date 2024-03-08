@@ -10,6 +10,7 @@ import ResetPasswordPage from '../components/ResetPasswordPage.vue'
 import uploadFilesPage from '../components/UploadPhotoPage.vue'
 import episodesPage from '../components/EpisodesPage.vue'
 import WatchPage from '../components/WatchPage.vue'
+import MemberPage from '../components/ProfilePage.vue'
 
 
 
@@ -68,6 +69,11 @@ const routes = [
     path: '/watch/:episode', // Dynamic segment for the series name directly under the root route
     name: 'Watch Episode Page',
     component: WatchPage
+  },
+  {
+    path: '/member/:username', // Dynamic segment for the series name directly under the root route
+    name: 'Member Page',
+    component: MemberPage
   },
 ]
 

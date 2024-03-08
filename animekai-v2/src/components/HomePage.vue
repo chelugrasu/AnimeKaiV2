@@ -289,7 +289,7 @@
         }
       },
       getBackgroundImageUrl(series) {
-      const headerPhoto = `${series.header_photo}.jpg`;
+      const headerPhoto = `${series.url_slug}-headerPhoto.jpg`;
       let imageUrl;
 
       try {
