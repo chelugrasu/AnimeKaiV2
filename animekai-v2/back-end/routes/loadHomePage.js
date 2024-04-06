@@ -18,8 +18,9 @@ const router = express.Router();
 router.use(bodyParser.json());
 
 router.post('/', async (req, res) => {
+  console.log("here")
   try {
-      pool.query('SELECT * FROM series_test', (error, results) => {
+      pool.query('SELECT * FROM series', (error, results) => {
         if (error) {
           console.error('Error during query:', error);
         }

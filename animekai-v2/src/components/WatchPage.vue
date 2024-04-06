@@ -39,7 +39,7 @@
               <font-awesome-icon :icon="['fas', 'circle-info']" size="xl" />
             </div>
             <div class="infoContainer">
-              <p>Dacă nu vezi subtitrările, verifică dacă sunt pornite din Player!</p>
+              <p>Dacă Auto-Skip Intro / Auto-Next nu funcționează , înseamnă că acestea nu au fost setate!</p>
               <p>Orice problemă legată de subtitrări/episod se raportează pe serverul nostru de discord</p>
             </div>
             <div class="autoSkipIntro">
@@ -78,7 +78,7 @@
   </template>
   <script>
 import router from '@/router';
-
+import playerjs from 'player.js'
 
   export default {
     data(){
@@ -105,6 +105,7 @@ import router from '@/router';
         autoNextButton: false,
         autoPlayButton: false,
         currentTimeSeconds: 0,
+        savedContinueWatching: false,
     }
     },
     async mounted(){
@@ -151,8 +152,8 @@ import router from '@/router';
                 this.isLoaded = true;
                 this.executeFunctionAfterIframeLoad();
                 const currentEpisodeId = this.episode[0].episode_id;
-                const prevEpisode = this.episodes.slice().reverse().find(episode => episode.episode_id < currentEpisodeId);
-                const nextEpisode = this.episodes.find(episode => episode.episode_id > currentEpisodeId);
+                const prevEpisode = this.episodes.slice().reverse().find(episode => episode.series_slug === this.episode[0].series_slug && episode.episode_id < currentEpisodeId);
+                const nextEpisode = this.episodes.find(episode => episode.series_slug === this.episode[0].series_slug && episode.episode_id > currentEpisodeId);
                 if (!nextEpisode) {
                     this.nextEpisodeAvailable = false;
                 }else if(!prevEpisode){
@@ -166,110 +167,76 @@ import router from '@/router';
         }
     },
     methods: {
-        getVideoIdFromDiv(divContent) {
-        /* eslint-disable-next-line no-useless-escape */
-        const regex = /\/embed\/([^\/?#]+\/[^\/?#]+)\??/;
-        const match = divContent.match(regex);
-        if (match) {
-            return match[1]; // Return the captured video ID
-        } else {
-            return null; // Return null if no match found
-        }
-        },
         getId(videoId) {
         return videoId
         },
         executeFunctionAfterIframeLoad() {
-          this.videoSrc = `https://iframe.mediadelivery.net/embed/${this.getId(this.getVideoIdFromDiv(this.episode[0].video_url))}?autoplay=${this.autoPlayButton}`;
           /* eslint-disable-next-line no-useless-escape */
-          const libraryIdRegex = /\/embed\/(\d+)/;
-          /* eslint-disable-next-line no-useless-escape */
-          const videoIdRegex = /\/embed\/[^\/?#]+\/([^\/?#]+)\??/;
-          const libraryId = this.videoSrc.match(libraryIdRegex);
-          const videoId = this.videoSrc.match(videoIdRegex);
-
-          if(libraryId){
-            if(videoId){
-              fetch(`https://api.bunny.net/videolibrary/${libraryId[1]}?includeAccessKey=false`, {
-                method: 'GET',
-                headers: {
-                  accept: 'application/json',
-                  AccessKey: '381c0414-641b-46a9-ae42-69ec77f8223b'
-                }
-              })
-              .then(response => response.json())
-              .then(response => {
-                fetch(`https://video.bunnycdn.com/library/${libraryId[1]}/videos/${videoId[1]}`, {
-                  method: 'GET',
-                  headers: {
-                    accept: 'application/json',
-                    AccessKey: `${response.ApiKey}`
-                  }
-                })
-                .then(response => response.json())
-                .then(response => {
-                  this.chapters = response.chapters
-                  this.episodeLength = response.length
-                }) .catch(err => console.error(err));
-              }) .catch(err => console.error(err));
-            }
-          }
-          
-          // Use mounted hook to initialize player
+          const regex = /(?<=\/v\/)([^\/]+)/;
+          const match = this.episode[0].video_url.match(regex);
+          this.videoSrc = `https://streamtape.com/e/${match[1]}`
           this.$nextTick(() => {
-              const player = new window.playerjs.Player(this.$refs.videoIframe);
-              let previousTime = null;
-              var isPlaying = false;
+              const player = new playerjs.Player(this.$refs.videoIframe);
               var currentTimeSet = false;
-              const checkTime = function() {
-                  player.getCurrentTime(currentTimeSeconds => {
-                    player.on('play', () => {
-                      isPlaying = true
-                    });
-                    if(this.autoPlayButton && !isPlaying){
-                      player.play();
-                    }
-                    this.currentTimeSeconds = currentTimeSeconds
-                      if (currentTimeSeconds !== previousTime) {
-                          if(this.autoSkipButton){
-                            const indexIntro = this.chapters.findIndex(chapter => chapter.title === 'INTRO');
-                            if(indexIntro !== -1){
-                              const introStart = this.chapters[indexIntro].start
-                              const introEnd = this.chapters[indexIntro].end
-                              const roundedSeconds = Math.round(currentTimeSeconds)
-                              if(roundedSeconds > introStart && roundedSeconds < introEnd){
-                                player.setCurrentTime(introEnd);
-                              }
-                            }
-                          }
-                          if(this.autoNextButton){
-                            const indexOutro = this.chapters.findIndex(chapter => chapter.title === 'OUTRO');
-                            if(indexOutro !== -1){
-                              const outroStart = this.chapters[indexOutro].start
-                              const outroEnd = this.chapters[indexOutro].end
-                              const roundedSeconds = Math.round(currentTimeSeconds)
-                              if(roundedSeconds > outroStart && roundedSeconds < outroEnd){
-                                this.nextEpisode();
-                              }
-                            }
-                          }
-                          previousTime = currentTimeSeconds;
-                      }
-                  });
-              }.bind(this);
-              
-              this.intervalId = setInterval(checkTime, 1000);
+              var doNotSkip = false
+              function timeStringToSeconds(timeString) {
+                  const [hours, minutes, seconds] = timeString.split(':').map(Number);
+                  return hours * 3600 + minutes * 60 + seconds;
+              }
+              player.on('ready', () => {
+                if(this.autoPlayButton){
+                  player.play();
+                }
+                if(this.episode[0].outro){
+                  const outro = JSON.parse(this.episode[0].outro);
+                  const outroStart = timeStringToSeconds(outro.start);
+                  const outroEnd = timeStringToSeconds(outro.end);
 
-              player.on('play', () => {
-                  if(this.continueWatching.length > 0 && !currentTimeSet){
-                    player.setCurrentTime(this.continueWatching[0].continue_time)
-                    currentTimeSet = !currentTimeSet
+                  if (this.continueWatching.length > 0 && !currentTimeSet) {
+                      const continueTimeSeconds = this.continueWatching[0].continue_time;
+                      if (continueTimeSeconds < outroStart || continueTimeSeconds > outroEnd) {
+                          player.setCurrentTime(this.continueWatching[0].continue_time);
+                          currentTimeSet = true;
+                      }else{
+                        player.setCurrentTime(this.continueWatching[0].continue_time);
+                        currentTimeSet = true;
+                        doNotSkip = true;
+                      }
+                  }
+                }else{
+                  if (this.continueWatching.length > 0 && !currentTimeSet) {
+                    player.setCurrentTime(this.continueWatching[0].continue_time);
+                    currentTimeSet = true;
+                  }
                 }
               });
-              player.on('ended', () => {
-                  clearInterval(this.intervalId);
-              });
 
+              player.on('timeupdate', (currentTime) => {
+                  this.currentTimeSeconds = currentTime.seconds
+                  this.episodeLength = currentTime.duration
+                  if(this.autoSkipButton){
+                    if(this.episode[0].intro){
+                      const intro = JSON.parse(this.episode[0].intro)
+                      const introStart = timeStringToSeconds(intro.start);
+                      const introEnd = timeStringToSeconds(intro.end);
+                      const roundedSeconds = Math.round(currentTime.seconds)
+                        if(roundedSeconds > introStart && roundedSeconds < introEnd){
+                          player.setCurrentTime(introEnd);
+                        }
+                    }
+                  }
+                  if(this.autoNextButton){
+                    if(this.episode[0].outro){
+                      const outro = JSON.parse(this.episode[0].outro)
+                      const outroStart = timeStringToSeconds(outro.start);
+                      const outroEnd = timeStringToSeconds(outro.end);
+                      const roundedSeconds = Math.round(currentTime.seconds)
+                      if(roundedSeconds > outroStart && roundedSeconds < outroEnd && !doNotSkip){
+                        this.nextEpisode();
+                      }
+                    }
+                  }
+              });
           });
       },
         openEpisodesList(){
@@ -327,7 +294,7 @@ import router from '@/router';
         },
     },
     beforeUnmount() {
-        if(this.currentTimeSeconds > 5){
+        if(this.currentTimeSeconds > 5 && !this.savedContinueWatching){
           fetch(`${process.env.VUE_APP_API_BASE_URL}/api/loadEpisode/saveContinueWatching`, {
             method: 'POST',
             headers: {
@@ -335,7 +302,7 @@ import router from '@/router';
             },
             body: JSON.stringify({
               episodeId: this.episode[0].episode_id,
-              video_url: this.episode[0].video_url,
+              video_thumbnail: this.episode[0].video_thumbnail,
               episode_title: this.episode[0].episode_title,
               series_slug: this.series[0].url_slug,
               username: this.userName,
@@ -346,6 +313,7 @@ import router from '@/router';
           .then(response => {
             if (response.ok) {
               this.currentTimeSeconds = 0
+              this.savedContinueWatching = true
               return response.json();
             }
             throw new Error('Network response was not ok.');
@@ -365,7 +333,7 @@ import router from '@/router';
   created(){
     const vm = this;
     window.addEventListener('beforeunload', function() {
-        if(vm.currentTimeSeconds > 5){
+      if(vm.currentTimeSeconds > 5 && !vm.savedContinueWatching){
           fetch(`${process.env.VUE_APP_API_BASE_URL}/api/loadEpisode/saveContinueWatching`, {
             method: 'POST',
             headers: {
@@ -373,7 +341,7 @@ import router from '@/router';
             },
             body: JSON.stringify({
               episodeId: vm.episode[0].episode_id,
-              video_url: vm.episode[0].video_url,
+              video_thumbnail: vm.episode[0].video_thumbnail,
               episode_title: vm.episode[0].episode_title,
               series_slug: vm.series[0].url_slug,
               username: vm.userName,
@@ -384,6 +352,7 @@ import router from '@/router';
           .then(response => {
             if (response.ok) {
               vm.currentTimeSeconds = 0
+              vm.savedContinueWatching = true
               return response.json();
             }
             throw new Error('Network response was not ok.');
@@ -620,7 +589,7 @@ import router from '@/router';
     position: absolute;
     left: 80px;
     border-radius: 4.65px;
-    width: 350px;
+    width: 475px;
     height: 67.5px;
     text-align: center;
     clip-path: inset(0 100% 0 0);
@@ -672,6 +641,7 @@ import router from '@/router';
   .autoSkipButtonCircle-active{
     transform: translateX(20px);
   }
+
 
 
   </style>

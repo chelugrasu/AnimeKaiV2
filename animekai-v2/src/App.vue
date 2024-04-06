@@ -8,7 +8,7 @@
     <div class="loggedInCategory" v-show="isLoggedIn">
       <div class='optionsButton' @click="toggleOptionsContainer()">
         <!-- <font-awesome-icon class="optionsButtonIcon" :icon="['fas', 'circle-user']" /> -->
-        <img v-if="isLoggedIn" class="optionsButtonIcon" :src="getProfilePicture(userName)" loading="lazy">
+        <img v-if="isLoggedIn" class="optionsButtonIcon" :src="getProfilePicture(profilePicture)" loading="lazy">
         <p v-if="isLoggedIn" class="optionsButtonText" v-text="userName"></p>
         <font-awesome-icon style="color: white; height: 1.35vh; margin-left: 0.75vh; margin-top: -0.2vh;" :icon="['fas', 'chevron-down']"/>
       </div>
@@ -18,12 +18,12 @@
           <div class="optionButtonDot"></div>
           <p class="optionButtonText">Profilul meu</p>
         </div>
-        <div class="optionButton" style="top: 5vh;">
+        <div class="optionButton" style="top: 5vh;" @click="redirect(`/member/${toLowerCaseValue(userName)}/?continue_watching`)">
           <font-awesome-icon class="optionButtonIcon" :icon="['fas', 'play']" size="sm"/>
           <div class="optionButtonDot"></div>
           <p class="optionButtonText">Continuăți vizionarea</p>
         </div>
-        <div class="optionButton" style="top: 9.5vh;">
+        <div class="optionButton" style="top: 9.5vh;" @click="redirect(`/member/${toLowerCaseValue(userName)}/?edit_profile`)">
           <font-awesome-icon class="optionButtonIcon" :icon="['fas', 'pen-to-square']" size="sm"/>
           <div class="optionButtonDot"></div>
           <p class="optionButtonText">Editează profilul</p>
@@ -55,13 +55,14 @@ export default {
       isActive: false,
       isLoggedIn: false,
       userName: '',
+      profilePicture: '',
       activeHeaderButtonIndex: null
     }
   },
   computed: {
     shouldShowHeader() {
       // Check if the route path is not equal to the paths where you want to hide the header
-      return !['/', '/login', '/register', '/verify', '/forgot-password', '/upload-files', '/reset-password`'].includes(this.$route.path);
+      return !['/', '/login', '/register', '/verify', '/forgot-password', '/upload-files', '/reset-password', '/change-email'].includes(this.$route.path);
     }
   },
   provide() {
@@ -94,6 +95,7 @@ export default {
           if(userData){
             this.userName = userData.username
             this.isLoggedIn = true
+            this.profilePicture = userData.profile_picture
           }else(
             this.isLoggedIn = false
           )
@@ -129,9 +131,9 @@ export default {
     setActiveHeaderButtonIndex(index){
       this.activeHeaderButtonIndex = index
     },
-    getProfilePicture(user){
+    getProfilePicture(pictureId){
         if(this.isLoggedIn){
-          const profilePicture = `${user.toLowerCase()}-profilePhoto.png`;
+          const profilePicture = `${pictureId}.png`;
           let imageUrl;
 
           try {

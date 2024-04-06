@@ -6,10 +6,7 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { fas } from '@fortawesome/free-solid-svg-icons'
 import { fab } from '@fortawesome/free-brands-svg-icons';
 import lenis from "vue-lenis";
-import playerjs from '@uizaio/playerjs';
 
-// Make PlayerJS globally available
-window.Playerjs = playerjs;
 library.add(fas, fab)
 
 

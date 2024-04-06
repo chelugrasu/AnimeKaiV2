@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LandingPage from '../components/LandingPage.vue'
 import HomePage from '../components/HomePage.vue'
 import SeriesPage from '../components/SeriesPage.vue'
+import MoviesPage from '../components/MoviesPage.vue'
 import RegisterPage from '../components/RegisterPage.vue'
 import LoginPage from '../components/LoginPage.vue'
 import VerifyPage from '../components/VerifyPage.vue'
@@ -11,6 +12,7 @@ import uploadFilesPage from '../components/UploadPhotoPage.vue'
 import episodesPage from '../components/EpisodesPage.vue'
 import WatchPage from '../components/WatchPage.vue'
 import MemberPage from '../components/ProfilePage.vue'
+import ChangeEmailPage from '../components/ChangeEmail.vue'
 
 
 
@@ -29,6 +31,11 @@ const routes = [
     path: '/series',
     name: 'SeriesPage',
     component: SeriesPage
+  },
+  {
+    path: '/movies',
+    name: 'Movies Page',
+    component: MoviesPage
   },
   {
     path: '/register',
@@ -74,6 +81,11 @@ const routes = [
     path: '/member/:username', // Dynamic segment for the series name directly under the root route
     name: 'Member Page',
     component: MemberPage
+  },
+  {
+    path: '/change-email', // Dynamic segment for the series name directly under the root route
+    name: 'Change Email Page',
+    component: ChangeEmailPage
   },
 ]
 

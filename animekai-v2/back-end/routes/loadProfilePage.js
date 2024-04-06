@@ -22,8 +22,15 @@ router.post('/', async (req, res) => {
         const urlUsername = req.body.memberUsername;
         const userName = req.body.userName;
         const isLoggedIn = req.body.isLoggedIn;
-        var isOwner = false;
-        var isAdmin = false;
+        var profileData = {
+            userData: {},
+            isOwner: false, 
+            isAdmin: false, 
+            viewedSeries: [],
+            toWatchSeries: [],
+            reviews: [],
+            continueWatching: []
+        }
 
         pool.query('SELECT * FROM users WHERE LOWER(username) = LOWER(?)', [urlUsername], (error, resultsUsers) => {
             if (error) {
@@ -35,32 +42,38 @@ router.post('/', async (req, res) => {
             }
             var viewedSeries = null;
             var toWatchSeries = null;
-            if(resultsUsers[0].username.toLowerCase() === userName.toLowerCase() && isLoggedIn){ isOwner = true; }
-            if(resultsUsers[0].adminAcces > 0){ isAdmin = true;}
-            if(resultsUsers[0].viewed_series){viewedSeries = JSON.parse(resultsUsers[0].viewed_series)}
-            if(resultsUsers[0].towatch_series){toWatchSeries = JSON.parse(resultsUsers[0].towatch_series)}
-            var reviews = null;
-            var continueWatching = '';
+            profileData.userData = {
+                memberUsername: resultsUsers[0].username,
+                email: resultsUsers[0].email,
+                profilePicture: resultsUsers[0].profile_picture,
+                registerDate: resultsUsers[0].created_date,
+                aboutMe: resultsUsers[0].about_me,
+                profile_settings: resultsUsers[0].profile_settings,
+            }
+            if(resultsUsers[0].username.toLowerCase() === userName.toLowerCase() && isLoggedIn){ profileData.isOwner = true; }
+            if(resultsUsers[0].adminAcces > 0){ profileData.isAdmin = true;}
+            if(resultsUsers[0].viewed_series){profileData.viewedSeries = JSON.parse(resultsUsers[0].viewed_series)}
+            if(resultsUsers[0].towatch_series){profileData.toWatchSeries = JSON.parse(resultsUsers[0].towatch_series)}
 
             pool.query('SELECT * FROM reviews WHERE LOWER(reviewer_name) = LOWER(?)', [urlUsername], (error, resultsReviews) => {
                 if (error) {
                     console.error('Error during reviews query:', error);
                 }
-                reviews = resultsReviews
+                profileData.reviews = resultsReviews
                 pool.query('SELECT * FROM series', (error, resultsSeries) => {
                     if (error) {
                         console.error('Error during continue watching query:', error);
                     }
-                    if(isOwner){
+                    if(profileData.isOwner){
                         pool.query('SELECT * FROM continuewatching WHERE LOWER(user_name) = LOWER(?)', [urlUsername], (error, resultsContinueWatching) => {
                             if (error) {
                                 console.error('Error during continue watching query:', error);
                             }
-                            continueWatching = resultsContinueWatching
-                            return res.json({ resultsUsers: resultsUsers, isOwner: isOwner, isAdmin: isAdmin, viewedSeries: viewedSeries, toWatchSeriesData: toWatchSeries, reviewsData: reviews, continueWatchingData: continueWatching, seriesData: resultsSeries});
+                            profileData.continueWatching = resultsContinueWatching
+                            return res.json({ profileData, seriesData: resultsSeries });
                         });
                     }else{
-                        return res.json({ resultsUsers: resultsUsers, isOwner: isOwner, isAdmin: isAdmin, viewedSeries: viewedSeries, toWatchSeriesData: toWatchSeries, reviewsData: reviews, seriesData: resultsSeries});
+                        return res.json({ profileData, seriesData: resultsSeries});
                     }
                 });
             });

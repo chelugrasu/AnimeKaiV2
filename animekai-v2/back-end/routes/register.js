@@ -66,23 +66,37 @@ router.post('/', async (req, res) => {
                 }
                   const token = crypto.randomBytes(20).toString('hex'); 
                   const insertQuery = 'INSERT INTO users (username, email, password, verify_token) VALUES (?, ?, ?, ?)';
-                  pool.query(insertQuery, [username, email, hashedPassword, token]);
-                  console.log(username + '4')
-                  const JWTtoken = jwt.sign({ username: username }, JWT_SECRET, { expiresIn: '1d' });
-                  res.status(200).json({ message: 'Succesfuly Logged In', JWTtoken });
-                  transporter.sendMail({
-                    from: 'noreply.animekai@gmail.com',
-                    to: email,
-                    subject: 'Validare cont AnimeKai.ro',
-                    text: `Apăsați următorul link pentru validarea contului dumneavoastră: http://localhost:8080/verify?token=${token}`
-                  }, (error, info) => {
-                    if (error) {
-                      console.error('Error sending email:', error);
-                      return res.status(500).json({ message: 'Error sending verification email' });
-                    }
-                    console.log('Email sent:', info.response);
+                  const selectQuery = 'SELECT user_id FROM users WHERE email = ?'; // Assuming email is unique
+                  
+                  pool.query(insertQuery, [username, email, hashedPassword, token], (error, results) => {
+                      if (error) {
+                        return res.status(500).json({ message: `Error creating user: ${error}` });
+                      } else {
+                          pool.query(selectQuery, [email], (error, results) => {
+                              if (error) {
+                                  return res.status(500).json({ message: `Error fetching user_id: ${error}` });
+                              } else {
+                                  const userId = results[0].user_id;
+                                  const JWTtoken = jwt.sign({ user_id: results[0].user_id }, JWT_SECRET, { expiresIn: '1d' });
+                                  res.status(200).json({ message: 'Succesfuly Logged In', JWTtoken });
+
+                                  transporter.sendMail({
+                                    from: 'noreply.animekai@gmail.com',
+                                    to: email,
+                                    subject: 'Validare cont AnimeKai.ro',
+                                    text: `Apăsați următorul link pentru validarea contului dumneavoastră: http://localhost:8080/verify?token=${token}`
+                                  }, (error, info) => {
+                                    if (error) {
+                                      console.error('Error sending email:', error);
+                                      return res.status(500).json({ message: 'Error sending verification email' });
+                                    }
+                                    console.log('Email sent:', info.response);
+                                  });
+                                  return
+                              }
+                          });
+                      }
                   });
-                  return
                 
               });
             }else{

@@ -19,7 +19,7 @@ function verifyToken(req, res, next) {
   }
   try {
     const decoded = jwt.verify(token, 'LB7/9rMBtdAu/Vnc7eKDavAYiVB2cwRKKzfMKiEe1iY=');
-    req.username = decoded;
+    req.user_id = decoded;
     next();
   } catch (error) {
     console.log(error)
@@ -29,14 +29,14 @@ function verifyToken(req, res, next) {
 
 // Route to check if user is logged in (token validation)
 router.get('/', verifyToken, (req, res) => {
-  pool.query('SELECT * FROM users WHERE username = ?', [req.username.username], (error, results) => {
+  pool.query('SELECT * FROM users WHERE user_id = ?', [req.user_id.user_id], (error, results) => {
     if (error) {
       console.error('Error during query:', error);
     }
 
     if (results.length > 0) {
       for (let i = 0; i < results.length; i++) {
-        res.json({ user: results[i].user_id , username: req.username.username}); 
+        res.json({ user: req.user_id.user_id , username: results[i].username, profile_picture: results[i].profile_picture}); 
       }
     }else{
         return

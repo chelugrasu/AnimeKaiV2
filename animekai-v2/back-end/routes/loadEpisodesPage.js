@@ -21,7 +21,7 @@ router.post('/', async (req, res) => {
   try {
     const seriesNameSlug = req.body.seriesName;
     if(seriesNameSlug){
-      pool.query('SELECT * FROM series_test WHERE url_slug = ?', [seriesNameSlug], (error, resultsSeries) => {
+      pool.query('SELECT * FROM series WHERE url_slug = ?', [seriesNameSlug], (error, resultsSeries) => {
         if (error) {
           console.error('Error during query:', error);
         }
@@ -32,7 +32,7 @@ router.post('/', async (req, res) => {
               console.error('Error during query:', error);
             }
             pool.query(`
-            SELECT * FROM episodes_test WHERE series_slug = ? ORDER BY 
+            SELECT * FROM episodes WHERE series_slug = ? ORDER BY 
               CAST(
                 REPLACE(
                   REPLACE(

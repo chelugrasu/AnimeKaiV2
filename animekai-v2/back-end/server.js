@@ -14,6 +14,9 @@ const loadEpisodesPage = require('./routes/loadEpisodesPage');
 const addReviewRoute = require('./routes/addReview');
 const loadEpisodeRoute = require('./routes/loadEpisode');
 const loadProfilePageRoute = require('./routes/loadProfilePage');
+const updateProfileDataRoute = require('./routes/updateProfileData');
+const changeEmailRoute = require('./routes/changeEmail');
+const loadSeriesPageRoute = require('./routes/loadSeriesPage');
 const app = express();
 
 app.use(cors());
@@ -30,6 +33,9 @@ app.use('/api/loadEpisodesPage', loadEpisodesPage);
 app.use('/api/addReview', addReviewRoute);
 app.use('/api/loadEpisode', loadEpisodeRoute);
 app.use('/api/loadProfilePage', loadProfilePageRoute);
+app.use('/api/updateProfileData', updateProfileDataRoute);
+app.use('/api/changeEmail', changeEmailRoute);
+app.use('/api/loadSeriesPage', loadSeriesPageRoute);
 
 
 // Start the server

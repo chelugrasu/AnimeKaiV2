@@ -51,7 +51,7 @@
             <div v-for="(episode, index) in filteredEpisodes" :key="index" class="episode" @click="redirect(`/watch/${episode.episode_id}`)">
                 <div class='episodeVideo'>
                     <font-awesome-icon class="playIcon" :icon="['fas', 'circle-play']" />
-                    <img :src="getVideoPreview(series[0].hostname, episode.video_url)" style="width: 100%; height: 100%; border-radius: 4.65px;" loading="lazy">
+                    <img :src="episode.video_thumbnail" style="width: 100%; height: 100%; border-radius: 4.65px;" loading="lazy">
                     <div class="blackSide"></div>
                 </div>
                 <p class="episodeTitle">{{ episode.episode_title }}</p>

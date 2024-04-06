@@ -36,15 +36,15 @@ router.post('/', async (req, res) => {
       });
     };
 
-    const resultsEpisode = await query('SELECT * FROM episodes_test WHERE episode_id = ?', [episodeID]);
+    const resultsEpisode = await query('SELECT * FROM episodes WHERE episode_id = ?', [episodeID]);
     
     if (resultsEpisode.length === 0) {
       return res.status(404).json({ message: 'Episode not found' });
     }
 
-    const resultsSeries = await query('SELECT * FROM series_test WHERE url_slug = ?', [resultsEpisode[0].series_slug]);
+    const resultsSeries = await query('SELECT * FROM series WHERE url_slug = ?', [resultsEpisode[0].series_slug]);
     const resultsEpisodes = await query(`
-    SELECT * FROM episodes_test WHERE series_slug = ? ORDER BY 
+    SELECT * FROM episodes WHERE series_slug = ? ORDER BY 
       CAST(
         REPLACE(
           REPLACE(
@@ -68,7 +68,7 @@ router.post('/', async (req, res) => {
 
 router.post('/saveContinueWatching', async (req, res) => {
   try {
-    const { episodeId, video_url, episode_title, series_slug, username, currentTimeSeconds, episode_length } = req.body;
+    const { episodeId, video_thumbnail, episode_title, series_slug, username, currentTimeSeconds, episode_length } = req.body;
     // Check if required parameters are provided
     if (!episodeId || !username || !currentTimeSeconds) {
       return res.status(400).json({ message: 'Missing required parameters' });
@@ -94,8 +94,8 @@ router.post('/saveContinueWatching', async (req, res) => {
                 return res.status(500).json({ message: 'Internal server error' });
               }
               pool.query(
-                'INSERT INTO continueWatching (episode_id, video_url, episode_title, series_slug, user_name, continue_time, episode_length) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                [episodeId, video_url, episode_title, series_slug, username, currentTimeSeconds, episode_length],
+                'INSERT INTO continueWatching (episode_id, video_thumbnail, episode_title, series_slug, user_name, continue_time, episode_length) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [episodeId, video_thumbnail, episode_title, series_slug, username, currentTimeSeconds, episode_length],
                 (error, insertResult) => {
                   if (error) {
                     console.error('Error inserting continueWatching:', error);
@@ -109,8 +109,8 @@ router.post('/saveContinueWatching', async (req, res) => {
         } else {
           // If the record does not exist, insert a new record
           pool.query(
-            'INSERT INTO continueWatching (episode_id, video_url, episode_title, series_slug, user_name, continue_time, episode_length) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [episodeId, video_url, episode_title, series_slug, username, currentTimeSeconds, episode_length],
+            'INSERT INTO continueWatching (episode_id, video_thumbnail, episode_title, series_slug, user_name, continue_time, episode_length) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [episodeId, video_thumbnail, episode_title, series_slug, username, currentTimeSeconds, episode_length],
             (error, insertResult) => {
               if (error) {
                 console.error('Error inserting continueWatching:', error);
